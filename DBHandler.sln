@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBHandler", "DBHandler\DBHandler.csproj", "{EFDE6B77-52C7-49D0-91C2-4C9D76205A1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EFDE6B77-52C7-49D0-91C2-4C9D76205A1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFDE6B77-52C7-49D0-91C2-4C9D76205A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFDE6B77-52C7-49D0-91C2-4C9D76205A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFDE6B77-52C7-49D0-91C2-4C9D76205A1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1037237A-695A-4F9A-8A67-975E37128AEC}
+	EndGlobalSection
+EndGlobal

@@ -1,6 +1,8 @@
 ﻿using Livingstone.Library;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading;
@@ -47,6 +49,8 @@ namespace HR_manage.Models
             else
             {
                 var connStr = WebConfigurationManager.AppSettings[server];
+                if (string.IsNullOrWhiteSpace(connStr))
+                    connStr = ConfigurationManager.AppSettings[server];
                 if (string.IsNullOrEmpty(connStr))
                     throw new DataException("The connection string is missing under the server: " + server);
                 return connStr;
@@ -262,7 +266,7 @@ namespace HR_manage.Models
             if (header != null)
                 header.Clear();
             if (entries != null)
-                entries.Clear();            
+                entries.Clear();
             data.Clear();
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
             using (SqlCommand com = new SqlCommand(sql, con))
@@ -310,7 +314,7 @@ namespace HR_manage.Models
             if (header != null)
                 header.Clear();
             if (entries != null)
-                entries.Clear();            
+                entries.Clear();
             data.Clear();
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
             using (SqlCommand com = new SqlCommand(sql, con))
@@ -358,7 +362,7 @@ namespace HR_manage.Models
             if (data == null)
                 return;
             if (header != null)
-                header.Clear();            
+                header.Clear();
             data.Clear();
             if (entries != null)
                 entries.Clear();
@@ -486,9 +490,7 @@ namespace HR_manage.Models
             if (obj == null)
                 return 0;
             if (type == "Decimal")
-            {
                 return (Int32)Convert.ToDecimal(obj);
-            }
             else
                 return Convert.ToInt32(obj);
         }
@@ -499,6 +501,12 @@ namespace HR_manage.Models
                 return false;
             if (type == "String")
                 return (obj.ToString().ToLower().Trim() == "true" || obj.ToString().Trim() == "1");
+            if (type == "Int32" || type == "UInt32" || type == "Int16" || type == "UInt16" || type == "Int64" || type == "UInt64")
+                return (Int64)obj != 0;
+            if (type == "Double" || type == "Single")
+                return (Double)obj != 0;
+            if (type == "Decimal")
+                return (Decimal)obj != 0;
             return (bool)obj;
         }
 
@@ -842,7 +850,8 @@ namespace HR_manage.Models
         }
 
 
-        public static void addTimeSpan(List<string> header, List<string> data, Dictionary<string, int> entries, string dateFormat = "dd/MM/yyyy")
+        public static void addTimeSpan(List<string> header, List<string> data, Dictionary<string, int> entries, 
+            string dateFormat = "dd/MM/yyyy", string delimiter = "<br />")
         {
             if (!entries.ContainsKey("isFullDay"))
                 return;
@@ -860,7 +869,7 @@ namespace HR_manage.Models
                 data[entries["End Time"]] = endTime.Date.ToString(dateFormat);
             }
             string timespan, hList;
-            Holiday.holidayCount(out timespan, out hList, startTime, endTime, isFullDay);
+            Holiday.holidayCount(out timespan, out hList, startTime, endTime, isFullDay, delimiter);
             if (!string.IsNullOrWhiteSpace(timespan))
             {
                 data.Insert(entries["End Time"] + 1, timespan);
@@ -877,7 +886,7 @@ namespace HR_manage.Models
         //entries: dictionary for quick finding header index
         //limit: string length limit for columns. startTime, endTime: helper variables
         public static void addTimeSpan(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
-            string dateFormat = "dd/MM/yyyy")
+            string dateFormat = "dd/MM/yyyy", string delimiter = "<br />")
         {
             if (!entries.ContainsKey("isFullDay"))
                 return;
@@ -897,7 +906,7 @@ namespace HR_manage.Models
                     data[i][entries["End Time"]] = endTime.Date.ToString(dateFormat);
                 }
                 string timespan, hList;
-                Holiday.holidayCount(out timespan, out hList, startTime, endTime, isFullDay);
+                Holiday.holidayCount(out timespan, out hList, startTime, endTime, isFullDay, delimiter);
                 data[i].Insert(entries["End Time"] + 1, timespan);
                 data[i].Insert(entries["End Time"] + 2, hList);
             }
@@ -934,6 +943,8 @@ namespace HR_manage.Models
         //Apply the filters in List<FilterViewModel> and compile into SQL
         public static string applyFilter(string initialCmd, Dictionary<string, object> param, List<FilterViewModel> filter)
         {
+            if (!initialCmd.Contains("where"))
+                initialCmd += " where 1 = 1 ";
             HashSet<string> allowedTypes = new HashSet<string>()
             {
                 "option", "number", "date", "text", "checkbox", "select"
@@ -1046,14 +1057,14 @@ namespace HR_manage.Models
         }
 
 
-        public static void refreshCRMSQL2(HashSet<string> memKeys, bool noForce = true)
+        public static void refreshCRMSQL2(ConcurrentDictionary<string, Func<object>> memKeys, bool noForce = true)
         {
             //5 hour timespan to auto refreshes
             if (noForce && DateTime.Now.Ticks - lastRefresh < crmsqlInterval * TimeSpan.TicksPerHour)
                 return;
-            DataSource.ExecuteNonQuery(refreshCRMSQL2Cmd, "crmsql2");
+            ExecuteNonQuery(refreshCRMSQL2Cmd, "CRMSQL2");
             Interlocked.Exchange(ref lastRefresh, DateTime.Now.Ticks);
-            if (memKeys != null)
+            if (memKeys != null && memKeys.Count != 0)
                 CacheHandler.resetMemCache(memKeys);
         }
 

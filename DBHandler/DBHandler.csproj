@@ -35,10 +35,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>\\crmdoc\netcrm\Project\References\HR\CacheHandler.dll</HintPath>
     </Reference>
-    <Reference Include="Database Lib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>\\crmdoc\netcrm\Project\References\HR\Database Lib.dll</HintPath>
-    </Reference>
     <Reference Include="Holidays, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>\\crmdoc\netcrm\Project\References\HR\Holidays.dll</HintPath>
@@ -48,6 +44,7 @@
       <HintPath>\\M17\intranet\bin\HRManagement.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />

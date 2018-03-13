@@ -13,6 +13,16 @@ namespace HR_manage.Models
 {
     public static class DBHandler
     {
+        public struct FilterViewModel
+        {
+            public string returnCol { get; set; }
+            public List<string> value { get; set; }
+            public string type { get; set; }
+            public string dataType { get; set; }
+            public int allowNull { get; set; }
+            public int complement { get; set; }
+        }
+
         static Dictionary<string, string> connStrings = new Dictionary<string, string>();
 
         public const string refreshCRMSQL2Cmd = @"
@@ -850,7 +860,7 @@ namespace HR_manage.Models
         }
 
 
-        public static void addTimeSpan(List<string> header, List<string> data, Dictionary<string, int> entries, 
+        public static void addTimeSpan(List<string> header, List<string> data, Dictionary<string, int> entries,
             string dateFormat = "dd/MM/yyyy", string delimiter = "<br />")
         {
             if (!entries.ContainsKey("isFullDay"))
@@ -956,7 +966,10 @@ namespace HR_manage.Models
                 var item = filter[j];
                 if (!allowedTypes.Contains(item.type))
                     continue;
-                lstCmd.Add("\n and ((");
+                if (item.complement == 1)
+                    lstCmd.Add("\n and not ((");
+                else
+                    lstCmd.Add("\n and ((");
                 int quotePosition = lstCmd.Count - 1;
                 switch (item.type)
                 {
@@ -969,7 +982,7 @@ namespace HR_manage.Models
                             string guid = "@" + Guid.NewGuid().ToString().Replace("-", "");
                             lstParam.Add(guid);
                             param[guid] = item.value[i];
-                            if (string.IsNullOrEmpty(item.value[i]))
+                            if (string.IsNullOrWhiteSpace(item.value[i]))
                                 item.allowNull = 1;
                         }
                         lstCmd.Add(string.Join(", ", lstParam));
@@ -979,6 +992,7 @@ namespace HR_manage.Models
                     case "number":
                     case "date":
                     case "text":
+                        var value = new List<string>(item.value);
                         string guid1 = "@" + Guid.NewGuid().ToString().Replace("-", "");
                         lstCmd.Add(item.returnCol);
                         lstCmd.Add(" >= ");
@@ -997,7 +1011,10 @@ namespace HR_manage.Models
                     case "checkbox":
                         string guid3 = "@" + Guid.NewGuid().ToString().Replace("-", "");
                         lstCmd.Add(item.returnCol);
-                        lstCmd.Add(" = ");
+                        if (item.complement == 1)
+                            lstCmd.Add(" != ");
+                        else
+                            lstCmd.Add(" = ");
                         lstCmd.Add(guid3);
                         param[guid3] = item.value[0];
                         if (string.IsNullOrEmpty(item.value[0]))

@@ -119,6 +119,58 @@ namespace HR_manage.Models
             }
         }
 
+        public static void getDataListFromConnStr(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
+    string sql, string connStr, Dictionary<string, object> parameters = null,
+    Dictionary<string, Dictionary<bool, string>> boolStr = null,
+    string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm")
+        {
+            if (data == null)
+                return;
+            if (header != null)
+                header.Clear();
+            data.Clear();
+            if (entries != null)
+                entries.Clear();
+            string fullTimeFormat = dateFormat + timeFormat;
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandTimeout = 6000000;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                con.Open();
+                using (SqlDataReader rd = com.ExecuteReader())
+                {
+                    if (rd.HasRows)
+                    {
+                        if (header != null || entries != null)
+                            for (int col = 0; col < rd.FieldCount; col++)
+                            {
+                                string newHeader = rd.GetName(col);
+                                if (header != null)
+                                    header.Add(newHeader);
+                                if (entries != null)
+                                    entries[newHeader] = header.Count - 1;
+                            }
+                        while (rd.Read())
+                        {
+                            List<string> row = new List<string>();
+                            for (int col = 0; col < rd.FieldCount; col++)
+                            {
+                                if (rd.IsDBNull(col))
+                                    row.Add(string.Empty);
+                                else
+                                    row.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                            }
+                            data.Add(row);
+                        }
+                    }
+                }
+                con.Close();
+            }
+        }
+
         public static void getDataList(List<string> header, List<string> data, Dictionary<string, int> entries,
             string sql, string server, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
@@ -133,6 +185,54 @@ namespace HR_manage.Models
             data.Clear();
             string fullTimeFormat = dateFormat + timeFormat;
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandTimeout = 6000000;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                con.Open();
+                using (SqlDataReader rd = com.ExecuteReader())
+                {
+                    if (rd.HasRows)
+                    {
+                        if (header != null || entries != null)
+                            for (int col = 0; col < rd.FieldCount; col++)
+                            {
+                                string newHeader = rd.GetName(col);
+                                if (header != null)
+                                    header.Add(newHeader);
+                                if (entries != null)
+                                    entries[newHeader] = col;
+                            }
+                        rd.Read();
+                        for (int col = 0; col < rd.FieldCount; col++)
+                        {
+                            if (rd.IsDBNull(col))
+                                data.Add(string.Empty);
+                            else
+                                data.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                        }
+                    }
+                }
+                con.Close();
+            }
+        }
+
+        public static void getDataListFromConnStr(List<string> header, List<string> data, Dictionary<string, int> entries,
+            string sql, string connStr, Dictionary<string, object> parameters = null,
+            Dictionary<string, Dictionary<bool, string>> boolStr = null,
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm")
+        {
+            if (data == null)
+                return;
+            if (header != null)
+                header.Clear();
+            if (entries != null)
+                entries.Clear();
+            data.Clear();
+            string fullTimeFormat = dateFormat + timeFormat;
+            using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
                 com.CommandTimeout = 6000000;
@@ -219,6 +319,58 @@ namespace HR_manage.Models
             }
         }
 
+        public static async Task getDataListAsyncFromConnStr(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
+            string sql, string connStr, Dictionary<string, object> parameters = null,
+            Dictionary<string, Dictionary<bool, string>> boolStr = null,
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm")
+        {
+            if (data == null)
+                return;
+            if (header != null)
+                header.Clear();
+            data.Clear();
+            if (entries != null)
+                entries.Clear();
+            string fullTimeFormat = dateFormat + timeFormat;
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandTimeout = 6000000;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                await con.OpenAsync().ConfigureAwait(false);
+                using (SqlDataReader rd = await com.ExecuteReaderAsync().ConfigureAwait(false))
+                {
+                    if (rd.HasRows)
+                    {
+                        if (header != null || entries != null)
+                            for (int col = 0; col < rd.FieldCount; col++)
+                            {
+                                string newHeader = rd.GetName(col);
+                                if (header != null)
+                                    header.Add(newHeader);
+                                if (entries != null)
+                                    entries[newHeader] = col;
+                            }
+                        while (await rd.ReadAsync().ConfigureAwait(false))
+                        {
+                            List<string> row = new List<string>();
+                            for (int col = 0; col < rd.FieldCount; col++)
+                            {
+                                if (rd.IsDBNull(col))
+                                    row.Add(string.Empty);
+                                else
+                                    row.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                            }
+                            data.Add(row);
+                        }
+                    }
+                }
+                con.Close();
+            }
+        }
+
         public static async Task getDataListAsync(List<string> header, List<string> data, Dictionary<string, int> entries,
             string sql, string server, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
@@ -233,6 +385,55 @@ namespace HR_manage.Models
             data.Clear();
             string fullTimeFormat = dateFormat + timeFormat;
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandTimeout = 6000000;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                await con.OpenAsync().ConfigureAwait(false);
+                using (SqlDataReader rd = await com.ExecuteReaderAsync().ConfigureAwait(false))
+                {
+                    if (rd.HasRows)
+                    {
+                        if (header != null || entries != null)
+                            for (int col = 0; col < rd.FieldCount; col++)
+                            {
+                                string newHeader = rd.GetName(col);
+                                if (header != null)
+                                    header.Add(newHeader);
+                                if (entries != null)
+                                    entries[newHeader] = col;
+                            }
+                        await rd.ReadAsync().ConfigureAwait(false);
+
+                        for (int col = 0; col < rd.FieldCount; col++)
+                        {
+                            if (rd.IsDBNull(col))
+                                data.Add(string.Empty);
+                            else
+                                data.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                        }
+                    }
+                }
+                con.Close();
+            }
+        }
+
+        public static async Task getDataListAsyncFromConnStr(List<string> header, List<string> data, Dictionary<string, int> entries,
+            string sql, string connStr, Dictionary<string, object> parameters = null,
+            Dictionary<string, Dictionary<bool, string>> boolStr = null,
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm")
+        {
+            if (data == null)
+                return;
+            if (header != null)
+                header.Clear();
+            if (entries != null)
+                entries.Clear();
+            data.Clear();
+            string fullTimeFormat = dateFormat + timeFormat;
+            using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
                 com.CommandTimeout = 6000000;

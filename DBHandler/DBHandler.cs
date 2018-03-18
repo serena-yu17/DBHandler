@@ -11,18 +11,18 @@ using System.Web.Configuration;
 
 namespace HR_manage.Models
 {
-    public static class DBHandler
+    public struct FilterViewModel
     {
-        public struct FilterViewModel
-        {
-            public string returnCol { get; set; }
-            public List<string> value { get; set; }
-            public string type { get; set; }
-            public string dataType { get; set; }
-            public int allowNull { get; set; }
-            public int complement { get; set; }
-        }
+        public string returnCol { get; set; }
+        public List<string> value { get; set; }
+        public string type { get; set; }
+        public string dataType { get; set; }
+        public int allowNull { get; set; }
+        public int complement { get; set; }
+    }
 
+    public static class DBHandler
+    {       
         static Dictionary<string, string> connStrings = new Dictionary<string, string>();
 
         public const string refreshCRMSQL2Cmd = @"
@@ -908,7 +908,7 @@ namespace HR_manage.Models
                 string str = data[i][colFullDay];
                 DateTime startTime = DateTime.ParseExact(data[i][entries["Start Time"]], dateFormat + " HH:mm", null);
                 DateTime endTime = DateTime.ParseExact(data[i][entries["End Time"]], dateFormat + " HH:mm", null);
-                if (str == "false")
+                if (str == "Partial")
                     isFullDay = false;
                 if (isFullDay)
                 {
@@ -955,6 +955,7 @@ namespace HR_manage.Models
         {
             if (!initialCmd.Contains("where"))
                 initialCmd += " where 1 = 1 ";
+            int paramNo = 0;
             HashSet<string> allowedTypes = new HashSet<string>()
             {
                 "option", "number", "date", "text", "checkbox", "select"
@@ -979,7 +980,8 @@ namespace HR_manage.Models
                         List<string> lstParam = new List<string>();
                         for (int i = 0; i < item.value.Count; i++)
                         {
-                            string guid = "@" + Guid.NewGuid().ToString().Replace("-", "");
+                            string guid = "@param" + paramNo.ToString();
+                            paramNo++;
                             lstParam.Add(guid);
                             param[guid] = item.value[i];
                             if (string.IsNullOrWhiteSpace(item.value[i]))
@@ -993,12 +995,14 @@ namespace HR_manage.Models
                     case "date":
                     case "text":
                         var value = new List<string>(item.value);
-                        string guid1 = "@" + Guid.NewGuid().ToString().Replace("-", "");
+                        string guid1 = "@param" + paramNo.ToString();
+                        paramNo++;
                         lstCmd.Add(item.returnCol);
                         lstCmd.Add(" >= ");
                         lstCmd.Add(guid1);
                         param[guid1] = item.value[0];
-                        string guid2 = "@" + Guid.NewGuid().ToString().Replace("-", "");
+                        string guid2 = "@param" + paramNo.ToString();
+                        paramNo++;
                         lstCmd.Add("\n and ");
                         lstCmd.Add(item.returnCol);
                         lstCmd.Add(" <= ");
@@ -1009,7 +1013,8 @@ namespace HR_manage.Models
                         conditionAdded = true;
                         break;
                     case "checkbox":
-                        string guid3 = "@" + Guid.NewGuid().ToString().Replace("-", "");
+                        string guid3 = "@param" + paramNo.ToString();
+                        paramNo++;
                         lstCmd.Add(item.returnCol);
                         if (item.complement == 1)
                             lstCmd.Add(" != ");
@@ -1046,7 +1051,8 @@ namespace HR_manage.Models
                                     conditionAdded = true;
                                     break;
                                 case "bit":
-                                    string guid4 = "@" + Guid.NewGuid().ToString().Replace("-", "");
+                                    string guid4 = "@param" + paramNo.ToString();
+                                    paramNo++;
                                     lstCmd.Add(item.returnCol);
                                     lstCmd.Add(" = ");
                                     lstCmd.Add(guid4);

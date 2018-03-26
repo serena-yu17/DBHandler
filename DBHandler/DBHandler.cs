@@ -1,5 +1,4 @@
-﻿using Livingstone.Library;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
@@ -9,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Configuration;
 
-namespace HR_manage.Models
+namespace Livingstone.Library
 {
     public struct FilterViewModel
     {
@@ -22,7 +21,7 @@ namespace HR_manage.Models
     }
 
     public static class DBHandler
-    {       
+    {
         static Dictionary<string, string> connStrings = new Dictionary<string, string>();
 
         public const string refreshCRMSQL2Cmd = @"
@@ -975,9 +974,21 @@ namespace HR_manage.Models
                 ExecuteNonQuery(sql, con, parameters);
         }
 
+        public static void ExecuteNonQueryFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null)
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+                ExecuteNonQuery(sql, con, parameters);
+        }
+
         public static async Task ExecuteNonQueryAsync(string sql, string server, Dictionary<string, object> parameters = null)
         {
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
+                await ExecuteNonQueryAsync(sql, con, parameters).ConfigureAwait(false);
+        }
+
+        public static async Task ExecuteNonQueryFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null)
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
                 await ExecuteNonQueryAsync(sql, con, parameters).ConfigureAwait(false);
         }
 
@@ -1007,6 +1018,62 @@ namespace HR_manage.Models
                 await com.ExecuteNonQueryAsync().ConfigureAwait(false);
             }
             con.Close();
+        }
+
+        public static void bulkInsert(DataTable table, string server)
+        {
+            using (SqlConnection con = new SqlConnection(getConnStr(server)))
+            using (SqlBulkCopy bc = new SqlBulkCopy(con))
+            {
+                con.Open();
+                bc.DestinationTableName = table.TableName;
+                foreach (var col in table.Columns)
+                    bc.ColumnMappings.Add(col.ToString(), col.ToString());
+                bc.WriteToServer(table);
+                con.Close();
+            }
+        }
+
+        public static void bulkInsertFromConnStr(DataTable table, string connStr)
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlBulkCopy bc = new SqlBulkCopy(con))
+            {
+                con.Open();
+                bc.DestinationTableName = table.TableName;
+                foreach (var col in table.Columns)
+                    bc.ColumnMappings.Add(col.ToString(), col.ToString());
+                bc.WriteToServer(table);
+                con.Close();
+            }
+        }
+
+        public static async Task bulkInsertAsync(DataTable table, string server)
+        {
+            using (SqlConnection con = new SqlConnection(getConnStr(server)))
+            using (SqlBulkCopy bc = new SqlBulkCopy(con))
+            {
+                con.Open();
+                bc.DestinationTableName = table.TableName;
+                foreach (var col in table.Columns)
+                    bc.ColumnMappings.Add(col.ToString(), col.ToString());
+                await bc.WriteToServerAsync(table);
+                con.Close();
+            }
+        }
+
+        public static async Task bulkInsertFromConnStrAsync(DataTable table, string connStr)
+        {
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlBulkCopy bc = new SqlBulkCopy(con))
+            {
+                con.Open();
+                bc.DestinationTableName = table.TableName;
+                foreach (var col in table.Columns)
+                    bc.ColumnMappings.Add(col.ToString(), col.ToString());
+                await bc.WriteToServerAsync(table);
+                con.Close();
+            }
         }
 
 
@@ -1291,100 +1358,5 @@ namespace HR_manage.Models
             if (memKeys != null && memKeys.Count != 0)
                 CacheHandler.resetMemCache(memKeys);
         }
-
-        //public static string getString(DataTable table, int row, int col,
-        //    Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
-        //    string timeformat = " HH:mm")
-        //{
-        //    string fullTimeFormat = dateFormat + timeformat;
-        //    if (table.Rows.Count <= row || table.Columns.Count <= col)
-        //        return string.Empty;
-        //    if (table.Rows[row][col] == null || table.Rows[row][col] == DBNull.Value)
-        //        return string.Empty;
-
-        //    switch (table.Columns[col].DataType.Name.ToString())
-        //    {
-        //        case "Boolean":
-        //            if (boolStr == null || !boolStr.ContainsKey(table.Columns[col].ColumnName))
-        //                return (bool)table.Rows[row][col] ? "true" : "false";
-        //            else
-        //                return boolStr[table.Columns[col].ColumnName][(bool)table.Rows[row][col]];
-        //        case "DateTime":
-        //            if (table.Columns[col].ColumnName.ToLower().Contains("time"))
-        //                return ((DateTime)table.Rows[row][col]).ToString(fullTimeFormat);
-        //            else
-        //                return ((DateTime)table.Rows[row][col]).ToString(dateFormat);
-        //        case "TimeSpan":
-        //            return ((TimeSpan)table.Rows[row][col]).ToString(@"hh\:mm"); ;
-        //        default:
-        //            return table.Rows[row][col].ToString();
-        //    }
-        //}
-
-        //public static double getDouble(DataTable table, int row, int col, double defaultDouble = 0)
-        //{
-        //    if (table.Rows.Count <= row || table.Columns.Count <= col)
-        //        return defaultDouble;
-        //    if (table.Rows[row][col] == null || table.Rows[row][col] == DBNull.Value)
-        //        return defaultDouble;
-        //    return (double)table.Rows[row][col];
-        //}
-
-        //public static Int32 getInt32(DataTable table, int row, int col, Int32 defaultInt = 0)
-        //{
-        //    if (table.Rows.Count <= row || table.Columns.Count <= col)
-        //        return defaultInt;
-        //    if (table.Rows[row][col] == null || table.Rows[row][col] == DBNull.Value)
-        //        return defaultInt;
-
-        //    if (table.Columns[col].DataType.Name.ToString() == "Decimal")
-        //        return (Int32)(decimal)table.Rows[row][col];
-        //    return (Int32)table.Rows[row][col];
-        //}
-
-        //public static bool getBool(DataTable table, int row, int col, bool defaultBool = false)
-        //{
-        //    if (table.Rows.Count <= row || table.Columns.Count <= col)
-        //        return defaultBool;
-        //    if (table.Rows[row][col] == null || table.Rows[row][col] == DBNull.Value)
-        //        return defaultBool;
-
-        //    return (bool)table.Rows[row][col];
-        //}
-
-        //Requires a connection already open
-        //public static void getdata(DataTable table, List<string> header, List<string> data,
-        //    Dictionary<string, int> entries,
-        //    Dictionary<string, Dictionary<bool, string>> boolStr = null, string format = "dd/MM/yyyy")
-        //{
-        //    for (int i = 0; i < table.Columns.Count; i++)
-        //    {
-        //        header.Add(table.Columns[i].ColumnName);
-        //        entries[table.Columns[i].ColumnName] = header.Count - 1;
-        //    }
-        //    for (int i = 0; i < table.Columns.Count; i++)
-        //        data.Add(getString(table, 0, i, boolStr, format));
-        //}
-        //reader: sql data reader. header: column headers. data: data rows. header and data will be appended with new data
-        //entries: dictionary for quick finding header index
-        //limit: string length limit for columns.
-        //public static void getdata(DataTable table, List<string> header, List<List<string>> data,
-        //    Dictionary<string, int> entries, Dictionary<string, Dictionary<bool, string>> boolStr = null,
-        //    string format = "dd/MM/yyyy")
-        //{
-        //    for (int i = 0; i < table.Columns.Count; i++)
-        //    {
-        //        header.Add(table.Columns[i].ColumnName);
-        //        entries[table.Columns[i].ColumnName] = i;
-        //    }
-        //    for (int i = 0; i < table.Rows.Count; i++)
-        //    {
-        //        List<string> line = new List<string>();
-        //        for (int j = 0; j < table.Columns.Count; j++)
-        //            line.Add(getString(table, i, j, boolStr, format));
-        //        data.Add(line);
-        //    }
-        //}
-
     }
 }

@@ -1129,7 +1129,7 @@ namespace Livingstone.Library
 
 
         public static void addTimeSpan(List<string> header, List<string> data, Dictionary<string, int> entries,
-            string dateFormat = "dd/MM/yyyy", string delimiter = "<br />")
+            string dateFormat = "dd/MM/yyyy", string delimiter = ", ")
         {
             if (!entries.ContainsKey("isFullDay"))
                 return;
@@ -1164,7 +1164,7 @@ namespace Livingstone.Library
         //entries: dictionary for quick finding header index
         //limit: string length limit for columns. startTime, endTime: helper variables
         public static void addTimeSpan(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
-            string dateFormat = "dd/MM/yyyy", string delimiter = "<br />")
+            string dateFormat = "dd/MM/yyyy", string delimiter = ", ")
         {
             if (!entries.ContainsKey("isFullDay"))
                 return;
@@ -1357,6 +1357,13 @@ namespace Livingstone.Library
             Interlocked.Exchange(ref lastRefresh, DateTime.Now.Ticks);
             if (memKeys != null && memKeys.Count != 0)
                 CacheHandler.resetMemCache(memKeys);
+        }
+
+        public static object perpareDBString(string input)
+        {
+            if (input == null)
+                return DBNull.Value;
+            return input.Trim();
         }
     }
 }

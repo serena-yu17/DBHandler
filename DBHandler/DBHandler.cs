@@ -1359,10 +1359,19 @@ namespace Livingstone.Library
                 CacheHandler.resetMemCache(memKeys);
         }
 
-        public static object perpareDBString(string input)
+        public static object prepareDBString(string input)
         {
             if (input == null)
                 return DBNull.Value;
+            return input.Trim();
+        }
+
+        public static object prepareLimitedDBStr(string input, int limit)
+        {
+            if (input == null)
+                return DBNull.Value;
+            if (input.Length > limit)
+                return input.Substring(0, limit);
             return input.Trim();
         }
     }

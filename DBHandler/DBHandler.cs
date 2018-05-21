@@ -23,18 +23,15 @@ namespace Livingstone.Library
     public static class DBHandler
     {
         static Dictionary<string, string> connStrings = new Dictionary<string, string>();
-        static ConcurrentDictionary<string, int> connCount = new ConcurrentDictionary<string, int>();
-        static SpinLock _spinlock = new SpinLock();        
+        static Dictionary<string, int> connCount = new Dictionary<string, int>();
+        static object counterLock = new object();
 
         private static void waitForConn(string connStr, int connectionLimit)
         {
             while (true)
             {
-                bool lockToken = false;
                 //avoid connection pool overflow
-                try
-                {
-                    _spinlock.Enter(ref lockToken);
+                lock (counterLock)
                     if (!connCount.ContainsKey(connStr))
                     {
                         connCount[connStr] = 1;
@@ -45,43 +42,22 @@ namespace Livingstone.Library
                         connCount[connStr]++;
                         break;
                     }
-                }
-                finally
-                {
-                    if (lockToken)
-                        _spinlock.Exit();
-                }
                 Thread.Sleep(10);
             }
         }
 
         private static void finalizeConn(string connStr)
         {
-            bool lockToken = false;
-            try
-            {
-                _spinlock.Enter(ref lockToken);
+            lock (counterLock)
                 if (connCount.ContainsKey(connStr))
-                {
                     connCount[connStr]--;
-                }
-            }
-            finally
-            {
-                if (lockToken)
-                    _spinlock.Exit();
-            }
         }
 
         private static async Task waitForConnAsync(string connStr, int connectionLimit)
         {
             while (true)
             {
-                bool lockToken = false;
-                //avoid connection pool overflow
-                try
-                {
-                    _spinlock.Enter(ref lockToken);
+                lock (counterLock)
                     if (!connCount.ContainsKey(connStr))
                     {
                         connCount[connStr] = 1;
@@ -92,12 +68,6 @@ namespace Livingstone.Library
                         connCount[connStr]++;
                         break;
                     }
-                }
-                finally
-                {
-                    if (lockToken)
-                        _spinlock.Exit();
-                }
                 await Task.Delay(10).ConfigureAwait(false);
             }
         }
@@ -105,8 +75,10 @@ namespace Livingstone.Library
         public static string getConnStr(string server)
         {
             var connStr = WebConfigurationManager.AppSettings[server];
-            if (string.IsNullOrWhiteSpace(connStr))
+            if (string.IsNullOrEmpty(connStr))
                 connStr = ConfigurationManager.AppSettings[server];
+            if (string.IsNullOrEmpty(connStr))
+                connStr = WebConfigurationManager.ConnectionStrings[server].ConnectionString;
             if (string.IsNullOrEmpty(connStr))
                 throw new DataException("The connection string is missing under the server: " + server);
             return connStr;
@@ -623,6 +595,12 @@ namespace Livingstone.Library
             }
         }
 
+        public static string toString(List<object> itemData, List<string> types, int index, string header = null, Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
+            string timeFormat = " HH:mm")
+        {
+            return toString(itemData[index], types[index], header, boolStr, dateFormat, timeFormat);
+        }
+
         public static Int32 toInt32(object obj, string type)
         {
             if (obj == null)
@@ -631,6 +609,11 @@ namespace Livingstone.Library
                 return (Int32)Convert.ToDecimal(obj);
             else
                 return Convert.ToInt32(obj);
+        }
+
+        public static Int32 toInt32(List<object> itemData, List<string> types, int index)
+        {
+            return toInt32(itemData[index], types[index]);
         }
 
         public static bool toBool(object obj, string type)
@@ -646,6 +629,11 @@ namespace Livingstone.Library
             if (type == "Decimal")
                 return (Decimal)obj != 0;
             return (bool)obj;
+        }
+
+        public static bool toBool(List<object> itemData, List<string> types, int index)
+        {
+            return toBool(itemData[index], types[index]);
         }
 
         public static string getString(string sql, string server, Dictionary<string, object> parameters = null,
@@ -1223,7 +1211,7 @@ namespace Livingstone.Library
                 }
             }
             return string.Join(" ", lstCmd);
-        }     
+        }
 
         public static object prepareDBString(string input)
         {

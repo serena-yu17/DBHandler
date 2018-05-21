@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -22,7 +21,6 @@ namespace Livingstone.Library
 
     public static class DBHandler
     {
-        static Dictionary<string, string> connStrings = new Dictionary<string, string>();
         static Dictionary<string, int> connCount = new Dictionary<string, int>();
         static object counterLock = new object();
 
@@ -31,43 +29,46 @@ namespace Livingstone.Library
             while (true)
             {
                 //avoid connection pool overflow
-                lock (counterLock)
-                    if (!connCount.ContainsKey(connStr))
-                    {
-                        connCount[connStr] = 1;
-                        break;
-                    }
-                    else if (connCount[connStr] < connectionLimit)
-                    {
-                        connCount[connStr]++;
-                        break;
-                    }
+                if (!connCount.ContainsKey(connStr) || connCount[connStr] < connectionLimit)
+                    lock (counterLock)
+                        if (!connCount.ContainsKey(connStr))
+                        {
+                            connCount[connStr] = 1;
+                            break;
+                        }
+                        else if (connCount[connStr] < connectionLimit)
+                        {
+                            connCount[connStr]++;
+                            break;
+                        }
                 Thread.Sleep(10);
             }
         }
 
         private static void finalizeConn(string connStr)
         {
-            lock (counterLock)
-                if (connCount.ContainsKey(connStr))
-                    connCount[connStr]--;
+            if (connCount.ContainsKey(connStr))
+                lock (counterLock)
+                    if (connCount.ContainsKey(connStr))
+                        connCount[connStr]--;
         }
 
         private static async Task waitForConnAsync(string connStr, int connectionLimit)
         {
             while (true)
             {
-                lock (counterLock)
-                    if (!connCount.ContainsKey(connStr))
-                    {
-                        connCount[connStr] = 1;
-                        break;
-                    }
-                    else if (connCount[connStr] < connectionLimit)
-                    {
-                        connCount[connStr]++;
-                        break;
-                    }
+                if (!connCount.ContainsKey(connStr) || connCount[connStr] < connectionLimit)
+                    lock (counterLock)
+                        if (!connCount.ContainsKey(connStr))
+                        {
+                            connCount[connStr] = 1;
+                            break;
+                        }
+                        else if (connCount[connStr] < connectionLimit)
+                        {
+                            connCount[connStr]++;
+                            break;
+                        }
                 await Task.Delay(10).ConfigureAwait(false);
             }
         }

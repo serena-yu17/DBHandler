@@ -605,11 +605,21 @@ namespace Livingstone.Library
         public static Int32 toInt32(object obj, string type)
         {
             if (obj == null)
-                return 0;
-            if (type == "Decimal")
-                return (Int32)Convert.ToDecimal(obj);
-            else
-                return Convert.ToInt32(obj);
+                return default(Int32);
+            switch (type)
+            {
+                case "Decimal":
+                    return (Int32)Convert.ToDecimal(obj);
+                case "String":
+                    if (Int32.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return default(Int32);
+                case "Boolean":
+                    return (bool)obj ? 1 : 0;
+                default:
+                    return Convert.ToInt32(obj);
+            }
         }
 
         public static Int32 toInt32(List<object> itemData, List<string> types, int index)
@@ -617,19 +627,64 @@ namespace Livingstone.Library
             return toInt32(itemData[index], types[index]);
         }
 
+        public static decimal toDecimal(object obj, string type)
+        {
+            if (obj == null)
+                return default(decimal);
+            switch (type)
+            {
+                case "String":
+                    if (decimal.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return default(decimal);
+                case "Int32":
+                case "UInt32":
+                case "Int16":
+                case "UInt16":
+                case "Int64":
+                    return (decimal)(Int64)obj;
+                case "UInt64":
+                    return (decimal)(UInt64)obj;
+                case "Double":
+                case "Single":
+                    return (decimal)(double)obj;
+                case "Boolean":
+                    return (bool)obj ? 1 : 0;
+                default:
+                    return (decimal)obj;
+            }
+        }
+
+        public static decimal toDecimal(List<object> itemData, List<string> types, int index)
+        {
+            return toDecimal(itemData[index], types[index]);
+        }
+
         public static bool toBool(object obj, string type)
         {
             if (obj == null)
                 return false;
-            if (type == "String")
-                return (obj.ToString().ToLower().Trim() == "true" || obj.ToString().Trim() == "1");
-            if (type == "Int32" || type == "UInt32" || type == "Int16" || type == "UInt16" || type == "Int64" || type == "UInt64")
-                return (Int64)obj != 0;
-            if (type == "Double" || type == "Single")
-                return (Double)obj != 0;
-            if (type == "Decimal")
-                return (Decimal)obj != 0;
-            return (bool)obj;
+            switch (type)
+            {
+                case "String":
+                    return (obj.ToString().ToLower().Trim() == "true" || obj.ToString().Trim() == "1");
+                case "Int32":
+                case "UInt32":
+                case "Int16":
+                case "UInt16":
+                case "Int64":
+                    return (Int64)obj != 0;
+                case "UInt64":
+                    return (UInt64)obj != 0;
+                case "Double":
+                case "Single":
+                    return (Double)obj != 0;
+                case "Decimal":
+                    return (Decimal)obj != 0;
+                default:
+                    return (bool)obj;
+            }
         }
 
         public static bool toBool(List<object> itemData, List<string> types, int index)

@@ -128,7 +128,7 @@ namespace Livingstone.Library
                                 if (header != null)
                                     header.Add(newHeader);
                                 if (entries != null)
-                                    entries[newHeader] = header.Count - 1;
+                                    entries[newHeader] = col;
                             }
                         while (rd.Read())
                         {
@@ -216,11 +216,11 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListAsyncFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
                     .ConfigureAwait(false);
         }
 
-        public static async Task getDataListAsyncFromConnStr(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
+        public static async Task getDataListFromConnStrAsync(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
             string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
@@ -281,11 +281,11 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListAsyncFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
                     .ConfigureAwait(false);
         }
 
-        public static async Task getDataListAsyncFromConnStr(List<string> header, List<string> data, Dictionary<string, int> entries,
+        public static async Task getDataListFromConnStrAsync(List<string> header, List<string> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
             string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
@@ -392,10 +392,10 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getRawDataAsyncFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getRawDataFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
         }
 
-        public static async Task getRawDataAsyncFromConnStr(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getRawDataFromConnStrAsync(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
             string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -485,7 +485,7 @@ namespace Livingstone.Library
                                 if (header != null)
                                     header.Add(newHeader);
                                 if (entries != null)
-                                    entries[newHeader] = header.Count - 1;
+                                    entries[newHeader] = col;
                             }
                         if (types != null)
                             for (int col = 0; col < rd.FieldCount; col++)
@@ -514,10 +514,10 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getRawDataAsyncFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getRawDataFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
         }
 
-        public static async Task getRawDataAsyncFromConnStr(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getRawDataFromConnStrAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
          string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -639,16 +639,21 @@ namespace Livingstone.Library
                     else
                         return default(decimal);
                 case "Int32":
+                    return (Int32)obj;
                 case "UInt32":
+                    return (UInt32)obj;
                 case "Int16":
+                    return (Int16)obj;
                 case "UInt16":
+                    return (UInt16)obj;
                 case "Int64":
-                    return (decimal)(Int64)obj;
+                    return (Int64)obj;
                 case "UInt64":
-                    return (decimal)(UInt64)obj;
+                    return (UInt64)obj;
                 case "Double":
-                case "Single":
                     return (decimal)(double)obj;
+                case "Single":
+                    return (decimal)(Single)obj;
                 case "Boolean":
                     return (bool)obj ? 1 : 0;
                 default:
@@ -670,16 +675,21 @@ namespace Livingstone.Library
                 case "String":
                     return (obj.ToString().ToLower().Trim() == "true" || obj.ToString().Trim() == "1");
                 case "Int32":
+                    return (Int32)obj != 0;
                 case "UInt32":
+                    return (UInt32)obj != 0;
                 case "Int16":
+                    return (Int16)obj != 0;
                 case "UInt16":
+                    return (UInt16)obj != 0;
                 case "Int64":
                     return (Int64)obj != 0;
                 case "UInt64":
                     return (UInt64)obj != 0;
                 case "Double":
-                case "Single":
                     return (Double)obj != 0;
+                case "Single":
+                    return (Single)obj != 0;
                 case "Decimal":
                     return (Decimal)obj != 0;
                 default:
@@ -756,12 +766,12 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getStringAsyncFromConnStr(sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
+                return await getStringFromConnStrAsync(sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
                     .ConfigureAwait(false);
             return string.Empty;
         }
 
-        public static async Task<string> getStringAsyncFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
+        public static async Task<string> getStringFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
             string timeFormat = " HH:mm", int connectionLimit = 100)
         {
@@ -852,11 +862,11 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getInt32AsyncFromConnStr(sql, connStr, parameters, defaultInt, connectionLimit).ConfigureAwait(false);
+                return await getInt32FromConnStrAsync(sql, connStr, parameters, defaultInt, connectionLimit).ConfigureAwait(false);
             return defaultInt;
         }
 
-        public static async Task<Int32> getInt32AsyncFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
+        public static async Task<Int32> getInt32FromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
             Int32 defaultInt = 0, int connectionLimit = 100)
         {
             Int32 res = defaultInt;
@@ -928,11 +938,11 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getDoubleAsyncFromConnStr(sql, connStr, parameters, defaultDouble, connectionLimit).ConfigureAwait(false);
+                return await getDoubleFromConnStrAsync(sql, connStr, parameters, defaultDouble, connectionLimit).ConfigureAwait(false);
             return defaultDouble;
         }
 
-        public static async Task<double> getDoubleAsyncFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
+        public static async Task<double> getDoubleFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
             double defaultDouble = 0, int connectionLimit = 100)
         {
             double res = defaultDouble;
@@ -1004,11 +1014,11 @@ namespace Livingstone.Library
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getBoolAsyncFromConnStr(sql, connStr, parameters, defaultBool, connectionLimit).ConfigureAwait(false);
+                return await getBoolFromConnStrAsync(sql, connStr, parameters, defaultBool, connectionLimit).ConfigureAwait(false);
             return defaultBool;
         }
 
-        public static async Task<bool> getBoolAsyncFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
+        public static async Task<bool> getBoolFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
             bool defaultBool = false, int connectionLimit = 100)
         {
             bool res = defaultBool;

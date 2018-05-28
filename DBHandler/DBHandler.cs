@@ -336,15 +336,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static void getRawData(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataList(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
             string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getRawDataFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit);
+                getDataListFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit);
         }
 
-        public static void getRawDataFromConnStr(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataListFromConnStr(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
             string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             using (SqlConnection con = new SqlConnection(connStr))
@@ -387,15 +387,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static async Task getRawDataAsync(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListAsync(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
             string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getRawDataFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
         }
 
-        public static async Task getRawDataFromConnStrAsync(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListFromConnStrAsync(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
             string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -447,15 +447,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static void getRawData(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataList(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
         string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getRawDataFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit);
+                getDataListFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit);
         }
 
-        public static void getRawDataFromConnStr(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataListFromConnStr(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
         string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -509,15 +509,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static async Task getRawDataAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
          string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getRawDataFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
         }
 
-        public static async Task getRawDataFromConnStrAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListFromConnStrAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
          string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -569,6 +569,167 @@ namespace Livingstone.Library
                 con.Close();
                 finalizeConn(connStr);
             }
+        }
+
+        public static UInt64 toUInt64(object obj, string type)
+        {
+            if (obj == null)
+                return default(UInt64);
+            switch (type)
+            {
+                case "String":
+                    if (UInt64.TryParse((string)obj, out var val))
+                        return val;
+                    else return default(UInt64);
+                case "Single":
+                    return (UInt64)(Single)obj;
+                case "Double":
+                    return (UInt64)(double)obj;
+                case "Int16":
+                    return (UInt64)(Int16)obj;
+                case "UInt16":
+                    return (UInt16)obj;
+                case "Int32":
+                    return (UInt64)(Int32)obj;
+                case "UInt32":
+                    return (UInt32)obj;
+                case "Int64":
+                    return (UInt64)(Int64)obj;
+                case "UInt64":
+                    return (UInt64)obj;
+                case "Decimal":
+                    return (UInt64)(decimal)obj;
+                default:
+                    return (UInt64)obj;
+            }
+        }
+
+        public static UInt64 toUInt64(List<object> itemData, List<string> types, int index)
+        {
+            return toUInt64(itemData[index], types[index]);
+        }
+
+        public static Int64 toInt64(object obj, string type)
+        {
+            if (obj == null)
+                return default(Int64);
+            switch (type)
+            {
+                case "String":
+                    if (Int64.TryParse((string)obj, out var val))
+                        return val;
+                    else return default(Int64);
+                case "Single":
+                    return (Int64)(Single)obj;
+                case "Double":
+                    return (Int64)(double)obj;
+                case "Int16":
+                    return (Int16)obj;
+                case "UInt16":
+                    return (UInt16)obj;
+                case "Int32":
+                    return (Int32)obj;
+                case "UInt32":
+                    return (UInt32)obj;
+                case "Int64":
+                    return (Int64)obj;
+                case "UInt64":
+                    return (Int64)(UInt64)obj;
+                case "Decimal":
+                    return (Int64)(decimal)obj;
+                default:
+                    return (Int64)obj;
+            }
+        }
+
+        public static Int64 toInt64(List<object> itemData, List<string> types, int index)
+        {
+            return toInt64(itemData[index], types[index]);
+        }
+
+        public static float toFloat(object obj, string type)
+        {
+            if (obj == null)
+                return default(float);
+            switch (type)
+            {
+                case "String":
+                    if (float.TryParse((string)obj, out var fVal))
+                        return fVal;
+                    else return default(float);
+                case "Single":
+                    return (Single)obj;
+                case "Double":
+                    return (float)(double)obj;
+                case "Int16":
+                    return (Int16)obj;
+                case "UInt16":
+                    return (UInt16)obj;
+                case "Int32":
+                    return (Int32)obj;
+                case "UInt32":
+                    return (UInt32)obj;
+                case "Int64":
+                    return (Int64)obj;
+                case "UInt64":
+                    return (UInt64)obj;
+                case "Decimal":
+                    return (float)(decimal)obj;
+                default:
+                    return (float)obj;
+            }
+        }
+
+        public static float toFloat(List<object> itemData, List<string> types, int index)
+        {
+            return toFloat(itemData[index], types[index]);
+        }
+
+        public static char toChar(object obj, string type)
+        {
+            if (obj == null)
+                return default(char);
+            switch (type)
+            {
+                case "String":
+                    var str = (string)obj;
+                    if (str.Length != 0)
+                        return str[0];
+                    else
+                        return default(char);
+                default:
+                    return (char)obj;
+            }
+        }
+
+        public static char toChar(List<object> itemData, List<string> types, int index)
+        {
+            return toChar(itemData[index], types[index]);
+        }
+
+        public static DateTime toDateTime(object obj, string type, string format = "yyyy-MM-dd")
+        {
+            if (obj == null)
+                return default(DateTime);
+            switch (type)
+            {
+                case "String":
+                    if (DateTime.TryParseExact((string)obj, format, System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out var res))
+                        return res;
+                    else return default(DateTime);
+                case "Int64":
+                    return new DateTime((Int64)obj);
+                case "UInt64":
+                    return new DateTime((long)(UInt64)obj);
+                default:
+                    return (DateTime)obj;
+            }
+        }
+
+        public static DateTime toDateTime(List<object> itemData, List<string> types, int index, string format = "yyyy-MM-dd")
+        {
+            return toDateTime(itemData[index], types[index], format);
         }
 
         public static string toString(object obj, string type, string header = null, Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",

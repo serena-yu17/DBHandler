@@ -1456,4 +1456,31 @@ namespace Livingstone.Library
             return input.Trim();
         }
     }
+
+    public static class ErrorHandler
+    {
+        public static string getInfoString(Exception e, string delim = "<br />")
+        {
+            List<string> arrMsg = new List<string>();
+            if (e is AggregateException)
+            {
+                AggregateException iterator = e as AggregateException;
+                arrMsg.Add(e.Message);
+                if (iterator != null)
+                    foreach (var innerEx in iterator.InnerExceptions)
+                        arrMsg.Add(getInfoString(innerEx));
+                return string.Join(delim, arrMsg);
+            }
+            else
+            {
+                Exception iterator = e;
+                while (iterator != null)
+                {
+                    arrMsg.Add(iterator.Message);
+                    iterator = iterator.InnerException;
+                }
+                return string.Join(delim + "Inner Exception:" + delim, arrMsg);
+            }
+        }
+    }
 }

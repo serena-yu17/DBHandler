@@ -813,6 +813,56 @@ namespace Livingstone.Library
             return toInt32(itemData[index], types[index]);
         }
 
+        public static Int16 toInt16(List<object> itemData, List<string> types, int index)
+        {
+            return toInt16(itemData[index], types[index]);
+        }
+
+        public static Int16 toInt16(object obj, string type)
+        {
+            if (obj == null)
+                return default(Int16);
+            switch (type)
+            {
+                case "Decimal":
+                    return (Int16)Convert.ToDecimal(obj);
+                case "String":
+                    if (Int16.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return default(Int16);
+                case "Boolean":
+                    return (bool)obj ? (Int16)1 : (Int16)0;
+                default:
+                    return Convert.ToInt16(obj);
+            }
+        }
+
+        public static UInt16 toUInt16(List<object> itemData, List<string> types, int index)
+        {
+            return toUInt16(itemData[index], types[index]);
+        }
+
+        public static UInt16 toUInt16(object obj, string type)
+        {
+            if (obj == null)
+                return default(UInt16);
+            switch (type)
+            {
+                case "Decimal":
+                    return (UInt16)Convert.ToDecimal(obj);
+                case "String":
+                    if (UInt16.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return default(UInt16);
+                case "Boolean":
+                    return (bool)obj ? (UInt16)1 : (UInt16)0;
+                default:
+                    return Convert.ToUInt16(obj);
+            }
+        }
+
         public static decimal toDecimal(object obj, string type)
         {
             if (obj == null)

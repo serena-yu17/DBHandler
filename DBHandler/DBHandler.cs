@@ -783,6 +783,31 @@ namespace Livingstone.Library
             }
         }
 
+        public static UInt32 toUInt32(List<object> itemData, List<string> types, int index)
+        {
+            return toUInt32(itemData[index], types[index]);
+        }
+
+        public static UInt32 toUInt32(object obj, string type)
+        {
+            if (obj == null)
+                return default(UInt32);
+            switch (type)
+            {
+                case "Decimal":
+                    return (UInt32)Convert.ToDecimal(obj);
+                case "String":
+                    if (UInt32.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return default(UInt32);
+                case "Boolean":
+                    return (bool)obj ? 1u : 0u;
+                default:
+                    return Convert.ToUInt32(obj);
+            }
+        }
+
         public static Int32 toInt32(List<object> itemData, List<string> types, int index)
         {
             return toInt32(itemData[index], types[index]);

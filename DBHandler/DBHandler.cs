@@ -707,27 +707,27 @@ namespace Livingstone.Library
             return toChar(itemData[index], types[index]);
         }
 
-        public static DateTime toDateTime(object obj, string type, string format = "yyyy-MM-dd")
+        public static DateTime? toDateTime(object obj, string type, string format = "yyyy-MM-dd")
         {
             if (obj == null)
-                return default(DateTime);
+                return null;
             switch (type)
             {
                 case "String":
                     if (DateTime.TryParseExact((string)obj, format, System.Globalization.CultureInfo.InvariantCulture,
                         System.Globalization.DateTimeStyles.None, out var res))
                         return res;
-                    else return default(DateTime);
+                    else return null;
                 case "Int64":
                     return new DateTime((Int64)obj);
                 case "UInt64":
                     return new DateTime((long)(UInt64)obj);
                 default:
-                    return (DateTime)obj;
+                    return (DateTime?)obj;
             }
         }
 
-        public static DateTime toDateTime(List<object> itemData, List<string> types, int index, string format = "yyyy-MM-dd")
+        public static DateTime? toDateTime(List<object> itemData, List<string> types, int index, string format = "yyyy-MM-dd")
         {
             return toDateTime(itemData[index], types[index], format);
         }

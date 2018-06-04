@@ -138,7 +138,7 @@ namespace Livingstone.Library
                                 if (rd.IsDBNull(col))
                                     row.Add(string.Empty);
                                 else
-                                    row.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                                    row.Add(toString(rd.GetValue(col), rd.GetName(col), boolStr, dateFormat, timeFormat));
                             }
                             data.Add(row);
                         }
@@ -200,7 +200,7 @@ namespace Livingstone.Library
                             if (rd.IsDBNull(col))
                                 data.Add(string.Empty);
                             else
-                                data.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                                data.Add(toString(rd.GetValue(col), rd.GetName(col), boolStr, dateFormat, timeFormat));
                         }
                     }
                 }
@@ -263,7 +263,7 @@ namespace Livingstone.Library
                                 if (rd.IsDBNull(col))
                                     row.Add(string.Empty);
                                 else
-                                    row.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                                    row.Add(toString(rd.GetValue(col), rd.GetName(col), boolStr, dateFormat, timeFormat));
                             }
                             data.Add(row);
                         }
@@ -327,7 +327,7 @@ namespace Livingstone.Library
                             if (rd.IsDBNull(col))
                                 data.Add(string.Empty);
                             else
-                                data.Add(toString(rd.GetValue(col), rd.GetFieldType(col).Name, rd.GetName(col), boolStr, dateFormat, timeFormat));
+                                data.Add(toString(rd.GetValue(col), rd.GetName(col), boolStr, dateFormat, timeFormat));
                         }
                     }
                 }
@@ -336,15 +336,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static void getDataList(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataList(List<string> header, List<object> data, Dictionary<string, int> entries,
             string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, connectionLimit);
         }
 
-        public static void getDataListFromConnStr(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataListFromConnStr(List<string> header, List<object> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             using (SqlConnection con = new SqlConnection(connStr))
@@ -369,9 +369,6 @@ namespace Livingstone.Library
                                 if (entries != null)
                                     entries[newHeader] = col;
                             }
-                        if (types != null)
-                            for (int col = 0; col < rd.FieldCount; col++)
-                                types.Add(rd.GetFieldType(col).Name);
                         rd.Read();
                         for (int col = 0; col < rd.FieldCount; col++)
                         {
@@ -387,15 +384,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static async Task getDataListAsync(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListAsync(List<string> header, List<object> data, Dictionary<string, int> entries,
             string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
         }
 
-        public static async Task getDataListFromConnStrAsync(List<string> header, List<object> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListFromConnStrAsync(List<string> header, List<object> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -427,10 +424,6 @@ namespace Livingstone.Library
                                 if (entries != null)
                                     entries[newHeader] = col;
                             }
-                        if (types != null)
-                            for (int col = 0; col < rd.FieldCount; col++)
-                                types.Add(rd.GetFieldType(col).Name);
-
                         await rd.ReadAsync().ConfigureAwait(false);
 
                         for (int col = 0; col < rd.FieldCount; col++)
@@ -447,15 +440,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static void getDataList(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataList(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
         string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, types, sql, connStr, parameters, connectionLimit);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, connectionLimit);
         }
 
-        public static void getDataListFromConnStr(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static void getDataListFromConnStr(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
         string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -487,9 +480,6 @@ namespace Livingstone.Library
                                 if (entries != null)
                                     entries[newHeader] = col;
                             }
-                        if (types != null)
-                            for (int col = 0; col < rd.FieldCount; col++)
-                                types.Add(rd.GetFieldType(col).Name);
                         while (rd.Read())
                         {
                             List<object> row = new List<object>();
@@ -509,15 +499,15 @@ namespace Livingstone.Library
             }
         }
 
-        public static async Task getDataListAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
          string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, types, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
         }
 
-        public static async Task getDataListFromConnStrAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries, List<string> types,
+        public static async Task getDataListFromConnStrAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
          string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
         {
             if (data == null)
@@ -549,9 +539,6 @@ namespace Livingstone.Library
                                 if (entries != null)
                                     entries[newHeader] = col;
                             }
-                        if (types != null)
-                            for (int col = 0; col < rd.FieldCount; col++)
-                                types.Add(rd.GetFieldType(col).Name);
                         while (await rd.ReadAsync().ConfigureAwait(false))
                         {
                             List<object> row = new List<object>();
@@ -571,11 +558,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static UInt64 toUInt64(object obj, string type)
+        public static UInt64 toUInt64(object obj)
         {
             if (obj == null)
                 return default(UInt64);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "String":
                     if (UInt64.TryParse((string)obj, out var val))
@@ -604,16 +591,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static UInt64 toUInt64(List<object> itemData, List<string> types, int index)
-        {
-            return toUInt64(itemData[index], types[index]);
-        }
-
-        public static Int64 toInt64(object obj, string type)
+        public static Int64 toInt64(object obj)
         {
             if (obj == null)
                 return default(Int64);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "String":
                     if (Int64.TryParse((string)obj, out var val))
@@ -642,16 +624,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static Int64 toInt64(List<object> itemData, List<string> types, int index)
-        {
-            return toInt64(itemData[index], types[index]);
-        }
-
-        public static float toFloat(object obj, string type)
+        public static float toFloat(object obj)
         {
             if (obj == null)
                 return default(float);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "String":
                     if (float.TryParse((string)obj, out var fVal))
@@ -680,16 +657,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static float toFloat(List<object> itemData, List<string> types, int index)
-        {
-            return toFloat(itemData[index], types[index]);
-        }
-
-        public static char toChar(object obj, string type)
+        public static char toChar(object obj)
         {
             if (obj == null)
                 return default(char);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "String":
                     var str = (string)obj;
@@ -702,16 +674,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static char toChar(List<object> itemData, List<string> types, int index)
-        {
-            return toChar(itemData[index], types[index]);
-        }
-
-        public static DateTime? toDateTime(object obj, string type, string format = "yyyy-MM-dd")
+        public static DateTime? toDateTime(object obj, string format = "yyyy-MM-dd")
         {
             if (obj == null)
                 return null;
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "String":
                     if (DateTime.TryParseExact((string)obj, format, System.Globalization.CultureInfo.InvariantCulture,
@@ -727,18 +694,13 @@ namespace Livingstone.Library
             }
         }
 
-        public static DateTime? toDateTime(List<object> itemData, List<string> types, int index, string format = "yyyy-MM-dd")
-        {
-            return toDateTime(itemData[index], types[index], format);
-        }
-
-        public static string toString(object obj, string type, string header = null, Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
+        public static string toString(object obj, string header = null, Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
             string timeFormat = " HH:mm")
         {
             if (obj == null)
                 return string.Empty;
             string fullTimeFormat = dateFormat + timeFormat;
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "Boolean":
                     if (boolStr == null || !boolStr.ContainsKey(header))
@@ -757,17 +719,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static string toString(List<object> itemData, List<string> types, int index, string header = null, Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
-            string timeFormat = " HH:mm")
-        {
-            return toString(itemData[index], types[index], header, boolStr, dateFormat, timeFormat);
-        }
-
-        public static Int32 toInt32(object obj, string type)
+        public static Int32 toInt32(object obj)
         {
             if (obj == null)
                 return default(Int32);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "Decimal":
                     return (Int32)Convert.ToDecimal(obj);
@@ -783,16 +739,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static UInt32 toUInt32(List<object> itemData, List<string> types, int index)
-        {
-            return toUInt32(itemData[index], types[index]);
-        }
-
-        public static UInt32 toUInt32(object obj, string type)
+        public static UInt32 toUInt32(object obj)
         {
             if (obj == null)
                 return default(UInt32);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "Decimal":
                     return (UInt32)Convert.ToDecimal(obj);
@@ -808,21 +759,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static Int32 toInt32(List<object> itemData, List<string> types, int index)
-        {
-            return toInt32(itemData[index], types[index]);
-        }
-
-        public static Int16 toInt16(List<object> itemData, List<string> types, int index)
-        {
-            return toInt16(itemData[index], types[index]);
-        }
-
-        public static Int16 toInt16(object obj, string type)
+        public static Int16 toInt16(object obj)
         {
             if (obj == null)
                 return default(Int16);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "Decimal":
                     return (Int16)Convert.ToDecimal(obj);
@@ -838,16 +779,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static UInt16 toUInt16(List<object> itemData, List<string> types, int index)
-        {
-            return toUInt16(itemData[index], types[index]);
-        }
-
-        public static UInt16 toUInt16(object obj, string type)
+        public static UInt16 toUInt16(object obj)
         {
             if (obj == null)
                 return default(UInt16);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "Decimal":
                     return (UInt16)Convert.ToDecimal(obj);
@@ -863,11 +799,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static decimal toDecimal(object obj, string type)
+        public static decimal toDecimal(object obj)
         {
             if (obj == null)
                 return default(decimal);
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "String":
                     if (decimal.TryParse(obj as string, out var res))
@@ -897,16 +833,11 @@ namespace Livingstone.Library
             }
         }
 
-        public static decimal toDecimal(List<object> itemData, List<string> types, int index)
-        {
-            return toDecimal(itemData[index], types[index]);
-        }
-
-        public static bool toBool(object obj, string type)
+        public static bool toBool(object obj)
         {
             if (obj == null)
                 return false;
-            switch (type)
+            switch (obj.GetType().Name)
             {
                 case "String":
                     return (obj.ToString().ToLower().Trim() == "true" || obj.ToString().Trim() == "1");
@@ -931,11 +862,6 @@ namespace Livingstone.Library
                 default:
                     return (bool)obj;
             }
-        }
-
-        public static bool toBool(List<object> itemData, List<string> types, int index)
-        {
-            return toBool(itemData[index], types[index]);
         }
 
         public static string getString(string sql, string server, Dictionary<string, object> parameters = null,

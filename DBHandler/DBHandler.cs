@@ -1456,6 +1456,24 @@ namespace Livingstone.Library
                 return input.Substring(0, limit);
             return input.Trim();
         }
+
+        static readonly HashSet<Type> numerics = new HashSet<Type>()
+        {
+            typeof(Int16),
+            typeof(UInt16),
+            typeof(Int32),
+            typeof(UInt32),
+            typeof(Int64),
+            typeof(UInt64),
+            typeof(Decimal),
+            typeof(Single),
+            typeof(Double)
+        }; 
+
+        public static bool isNumeric(Type type)
+        {
+            return numerics.Contains(type);
+        }
     }
 
     public static class ErrorHandler

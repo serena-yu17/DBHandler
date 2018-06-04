@@ -1460,7 +1460,7 @@ namespace Livingstone.Library
 
     public static class ErrorHandler
     {
-        public static string getInfoString(Exception e, string delim = "<br />")
+        public static string getInfoString(Exception e, string delim = ", ")
         {
             List<string> arrMsg = new List<string>();
             if (e is AggregateException)

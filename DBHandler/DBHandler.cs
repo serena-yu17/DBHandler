@@ -75,10 +75,12 @@ namespace Livingstone.Library
 
         public static string getConnStr(string server)
         {
-            var connStr = WebConfigurationManager.AppSettings[server];
-            if (string.IsNullOrEmpty(connStr))
+            string connStr = null;
+            if (WebConfigurationManager.AppSettings != null && WebConfigurationManager.AppSettings[server] != null)
+                connStr = WebConfigurationManager.AppSettings[server];
+            if (string.IsNullOrEmpty(connStr) && ConfigurationManager.AppSettings != null && ConfigurationManager.AppSettings[server] != null)
                 connStr = ConfigurationManager.AppSettings[server];
-            if (string.IsNullOrEmpty(connStr))
+            if (string.IsNullOrEmpty(connStr) && WebConfigurationManager.ConnectionStrings != null && WebConfigurationManager.ConnectionStrings[server] != null)
                 connStr = WebConfigurationManager.ConnectionStrings[server].ConnectionString;
             if (string.IsNullOrEmpty(connStr))
                 throw new DataException("The connection string is missing under the server: " + server);
@@ -1468,7 +1470,7 @@ namespace Livingstone.Library
             typeof(Decimal),
             typeof(Single),
             typeof(Double)
-        }; 
+        };
 
         public static bool isNumeric(Type type)
         {

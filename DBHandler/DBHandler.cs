@@ -87,20 +87,80 @@ namespace Livingstone.Library
             return connStr;
         }
 
-        public static void getDataList(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null,
-            Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+        public static void getDataTable(DataTable table, string sql, string server,
+            Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit);
+                getDataTableFromConnStr(table, sql, connStr, parameters, commandType, connectionLimit);
+        }
+
+        public static void getDataTableFromConnStr(DataTable table, string sql, string connStr,
+            Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
+        {
+            if (table == null)
+                return;
+            table.Clear();
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandType = commandType;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                waitForConn(connStr, connectionLimit);
+                con.Open();
+                using (SqlDataReader rd = com.ExecuteReader())
+                    table.Load(rd);
+                con.Close();
+                finalizeConn(connStr);
+            }
+        }
+
+        public static async Task getDataTableAsync(DataTable table, string sql, string server,
+            Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
+        {
+            string connStr = getConnStr(server);
+            if (!string.IsNullOrEmpty(connStr))
+                await getDataTableFromConnStrAsync(table, sql, connStr, parameters, commandType, connectionLimit).ConfigureAwait(false);
+        }
+
+        public static async Task getDataTableFromConnStrAsync(DataTable table, string sql, string connStr,
+            Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
+        {
+            if (table == null)
+                return;
+            table.Clear();
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandType = commandType;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                await waitForConnAsync(connStr, connectionLimit);
+                await con.OpenAsync();
+                using (SqlDataReader rd = await com.ExecuteReaderAsync())
+                    table.Load(rd);
+                con.Close();
+                finalizeConn(connStr);
+            }
+        }
+
+        public static void getDataList(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
+            string sql, string server, Dictionary<string, object> parameters = null,
+            Dictionary<string, Dictionary<bool, string>> boolStr = null,
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
+        {
+            string connStr = getConnStr(server);
+            if (!string.IsNullOrEmpty(connStr))
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             if (data == null)
                 return;
@@ -113,7 +173,7 @@ namespace Livingstone.Library
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -154,17 +214,17 @@ namespace Livingstone.Library
         public static void getDataList(List<string> header, List<string> data, Dictionary<string, int> entries,
             string sql, string server, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<string> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             if (data == null)
                 return;
@@ -177,7 +237,7 @@ namespace Livingstone.Library
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -214,18 +274,18 @@ namespace Livingstone.Library
         public static async Task getDataListAsync(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
             string sql, string server, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit)
                     .ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             if (data == null)
                 return;
@@ -238,7 +298,7 @@ namespace Livingstone.Library
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -279,18 +339,18 @@ namespace Livingstone.Library
         public static async Task getDataListAsync(List<string> header, List<string> data, Dictionary<string, int> entries,
             string sql, string server, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit)
                     .ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<string> data, Dictionary<string, int> entries,
             string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", int connectionLimit = 100)
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             if (data == null)
                 return;
@@ -303,7 +363,7 @@ namespace Livingstone.Library
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -339,20 +399,20 @@ namespace Livingstone.Library
         }
 
         public static void getDataList(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+            string sql, string server, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, connectionLimit);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, commandType, connectionLimit);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+            string sql, string connStr, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -387,15 +447,15 @@ namespace Livingstone.Library
         }
 
         public static async Task getDataListAsync(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+            string sql, string server, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, commandType, connectionLimit).ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+            string sql, string connStr, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             if (data == null)
                 return;
@@ -407,7 +467,7 @@ namespace Livingstone.Library
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -443,15 +503,15 @@ namespace Livingstone.Library
         }
 
         public static void getDataList(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-        string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+        string sql, string server, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, connectionLimit);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, commandType, connectionLimit);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-        string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+        string sql, string connStr, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             if (data == null)
                 return;
@@ -463,7 +523,7 @@ namespace Livingstone.Library
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -502,15 +562,15 @@ namespace Livingstone.Library
         }
 
         public static async Task getDataListAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-         string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+         string sql, string server, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, connectionLimit).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, commandType, connectionLimit).ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-         string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+         string sql, string connStr, Dictionary<string, object> parameters = null, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             if (data == null)
                 return;
@@ -522,7 +582,7 @@ namespace Livingstone.Library
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -868,23 +928,23 @@ namespace Livingstone.Library
 
         public static string getString(string sql, string server, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
-            string timeFormat = " HH:mm", int connectionLimit = 100)
+            string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return getStringFromConnStr(sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit);
+                return getStringFromConnStr(sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit);
             return string.Empty;
         }
 
         public static string getStringFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
-            string timeFormat = " HH:mm", int connectionLimit = 100)
+            string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string fullTimeFormat = dateFormat + timeFormat;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -926,24 +986,24 @@ namespace Livingstone.Library
 
         public static async Task<string> getStringAsync(string sql, string server, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
-            string timeFormat = " HH:mm", int connectionLimit = 100)
+            string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getStringFromConnStrAsync(sql, connStr, parameters, boolStr, dateFormat, timeFormat, connectionLimit)
+                return await getStringFromConnStrAsync(sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit)
                     .ConfigureAwait(false);
             return string.Empty;
         }
 
         public static async Task<string> getStringFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
             Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
-            string timeFormat = " HH:mm", int connectionLimit = 100)
+            string timeFormat = " HH:mm", CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string fullTimeFormat = dateFormat + timeFormat;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -984,22 +1044,22 @@ namespace Livingstone.Library
         }
 
         public static Int32 getInt32(string sql, string server, Dictionary<string, object> parameters = null,
-            Int32 defaultInt = 0, int connectionLimit = 100)
+            Int32 defaultInt = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return getInt32FromConnStr(sql, connStr, parameters, defaultInt, connectionLimit);
+                return getInt32FromConnStr(sql, connStr, parameters, defaultInt, commandType, connectionLimit);
             return defaultInt;
         }
 
         public static Int32 getInt32FromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
-            Int32 defaultInt = 0, int connectionLimit = 100)
+            Int32 defaultInt = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             Int32 res = defaultInt;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -1022,22 +1082,22 @@ namespace Livingstone.Library
         }
 
         public static async Task<Int32> getInt32Async(string sql, string server, Dictionary<string, object> parameters = null,
-            Int32 defaultInt = 0, int connectionLimit = 100)
+            Int32 defaultInt = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getInt32FromConnStrAsync(sql, connStr, parameters, defaultInt, connectionLimit).ConfigureAwait(false);
+                return await getInt32FromConnStrAsync(sql, connStr, parameters, defaultInt, commandType, connectionLimit).ConfigureAwait(false);
             return defaultInt;
         }
 
         public static async Task<Int32> getInt32FromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
-            Int32 defaultInt = 0, int connectionLimit = 100)
+            Int32 defaultInt = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             Int32 res = defaultInt;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -1060,22 +1120,22 @@ namespace Livingstone.Library
         }
 
         public static double getDouble(string sql, string server, Dictionary<string, object> parameters = null,
-            double defaultDouble = 0, int connectionLimit = 100)
+            double defaultDouble = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return getDoubleFromConnStr(sql, connStr, parameters, defaultDouble, connectionLimit);
+                return getDoubleFromConnStr(sql, connStr, parameters, defaultDouble, commandType, connectionLimit);
             return defaultDouble;
         }
 
         public static double getDoubleFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
-            double defaultDouble = 0, int connectionLimit = 100)
+            double defaultDouble = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             double res = defaultDouble;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -1098,22 +1158,22 @@ namespace Livingstone.Library
         }
 
         public static async Task<double> getDoubleAsync(string sql, string server, Dictionary<string, object> parameters = null,
-            double defaultDouble = 0, int connectionLimit = 100)
+            double defaultDouble = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getDoubleFromConnStrAsync(sql, connStr, parameters, defaultDouble, connectionLimit).ConfigureAwait(false);
+                return await getDoubleFromConnStrAsync(sql, connStr, parameters, defaultDouble, commandType, connectionLimit).ConfigureAwait(false);
             return defaultDouble;
         }
 
         public static async Task<double> getDoubleFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
-            double defaultDouble = 0, int connectionLimit = 100)
+            double defaultDouble = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             double res = defaultDouble;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -1136,22 +1196,22 @@ namespace Livingstone.Library
         }
 
         public static bool getBool(string sql, string server, Dictionary<string, object> parameters = null,
-            bool defaultBool = false, int connectionLimit = 100)
+            bool defaultBool = false, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return getBoolFromConnStr(sql, connStr, parameters, defaultBool, connectionLimit);
+                return getBoolFromConnStr(sql, connStr, parameters, defaultBool, commandType, connectionLimit);
             return defaultBool;
         }
 
         public static bool getBoolFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
-            bool defaultBool = false, int connectionLimit = 100)
+            bool defaultBool = false, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             bool res = defaultBool;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -1174,22 +1234,22 @@ namespace Livingstone.Library
         }
 
         public static async Task<bool> getBoolAsync(string sql, string server, Dictionary<string, object> parameters = null,
-            bool defaultBool = false, int connectionLimit = 100)
+            bool defaultBool = false, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                return await getBoolFromConnStrAsync(sql, connStr, parameters, defaultBool, connectionLimit).ConfigureAwait(false);
+                return await getBoolFromConnStrAsync(sql, connStr, parameters, defaultBool, commandType, connectionLimit).ConfigureAwait(false);
             return defaultBool;
         }
 
         public static async Task<bool> getBoolFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
-            bool defaultBool = false, int connectionLimit = 100)
+            bool defaultBool = false, CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             bool res = defaultBool;
             using (SqlConnection con = new SqlConnection(connStr))
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 6000000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -1211,37 +1271,42 @@ namespace Livingstone.Library
             return res;
         }
 
-        public static void ExecuteNonQuery(string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+        public static void ExecuteNonQuery(string sql, string server, Dictionary<string, object> parameters = null, 
+            CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
-                ExecuteNonQuery(sql, con, parameters, connectionLimit);
+                ExecuteNonQuery(sql, con, parameters, commandType, connectionLimit);
         }
 
-        public static void ExecuteNonQueryFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+        public static void ExecuteNonQueryFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
+            CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             using (SqlConnection con = new SqlConnection(connStr))
-                ExecuteNonQuery(sql, con, parameters, connectionLimit);
+                ExecuteNonQuery(sql, con, parameters, commandType, connectionLimit);
         }
 
-        public static async Task ExecuteNonQueryAsync(string sql, string server, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+        public static async Task ExecuteNonQueryAsync(string sql, string server, Dictionary<string, object> parameters = null,
+            CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
-                await ExecuteNonQueryAsync(sql, con, parameters, connectionLimit).ConfigureAwait(false);
+                await ExecuteNonQueryAsync(sql, con, parameters, commandType, connectionLimit).ConfigureAwait(false);
         }
 
-        public static async Task ExecuteNonQueryFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+        public static async Task ExecuteNonQueryFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
+            CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             using (SqlConnection con = new SqlConnection(connStr))
-                await ExecuteNonQueryAsync(sql, con, parameters, connectionLimit).ConfigureAwait(false);
+                await ExecuteNonQueryAsync(sql, con, parameters, commandType, connectionLimit).ConfigureAwait(false);
         }
 
-        public static void ExecuteNonQuery(string sql, SqlConnection con, Dictionary<string, object> parameters = null, int connectionLimit = 100)
+        public static void ExecuteNonQuery(string sql, SqlConnection con, Dictionary<string, object> parameters = null, 
+            CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             waitForConn(con.ConnectionString, connectionLimit);
             con.Open();
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 600000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
@@ -1252,13 +1317,14 @@ namespace Livingstone.Library
         }
 
         public static async Task ExecuteNonQueryAsync(string sql, SqlConnection con,
-            Dictionary<string, object> parameters = null, int connectionLimit = 100)
+            Dictionary<string, object> parameters = null,
+            CommandType commandType = CommandType.Text, int connectionLimit = 100)
         {
             await waitForConnAsync(con.ConnectionString, connectionLimit).ConfigureAwait(false);
             await con.OpenAsync().ConfigureAwait(false);
             using (SqlCommand com = new SqlCommand(sql, con))
             {
-                com.CommandTimeout = 600000;
+                com.CommandType = commandType;
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);

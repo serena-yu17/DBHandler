@@ -88,17 +88,17 @@ namespace Livingstone.Library
         }
 
         public static void getDataList(DataTable table, string sql, string server,
-            Dictionary<string, object> parameters = null, 
+            Dictionary<string, object> parameters = null, CancellationToken ct = default,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(table, sql, connStr, parameters, commandType, connectionLimit, timeout);
+                getDataListFromConnStr(table, sql, connStr, parameters, ct, commandType, connectionLimit, timeout);
         }
 
         public static void getDataListFromConnStr(DataTable table, string sql, string connStr,
-            Dictionary<string, object> parameters = null, 
-            CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout =0)
+            Dictionary<string, object> parameters = null, CancellationToken ct = default,
+            CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (table == null)
                 return;
@@ -113,6 +113,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 waitForConn(connStr, connectionLimit);
                 con.Open();
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = com.ExecuteReader())
                     table.Load(rd);
                 con.Close();
@@ -121,16 +122,16 @@ namespace Livingstone.Library
         }
 
         public static async Task getDataListAsync(DataTable table, string sql, string server,
-            Dictionary<string, object> parameters = null, 
-            CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout =0)
+            Dictionary<string, object> parameters = null, CancellationToken ct = default,
+            CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(table, sql, connStr, parameters, commandType, connectionLimit, timeout).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(table, sql, connStr, parameters,ct, commandType, connectionLimit, timeout).ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(DataTable table, string sql, string connStr,
-            Dictionary<string, object> parameters = null, 
+            Dictionary<string, object> parameters = null, CancellationToken ct = default,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (table == null)
@@ -144,9 +145,9 @@ namespace Livingstone.Library
                 if (parameters != null)
                     foreach (var key in parameters)
                         com.Parameters.AddWithValue(key.Key, key.Value);
-                await waitForConnAsync(connStr, connectionLimit);
-                await con.OpenAsync();
-                using (SqlDataReader rd = await com.ExecuteReaderAsync())
+                await waitForConnAsync(connStr, connectionLimit).ConfigureAwait(false);
+                await con.OpenAsync().ConfigureAwait(false);
+                using (SqlDataReader rd = await com.ExecuteReaderAsync(ct).ConfigureAwait(false))
                     table.Load(rd);
                 con.Close();
                 finalizeConn(connStr);
@@ -154,20 +155,20 @@ namespace Livingstone.Library
         }
 
         public static void getDataList(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null,
+            string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters,ct, boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null,
+            string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (data == null)
@@ -188,6 +189,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 waitForConn(connStr, connectionLimit);
                 con.Open();
+                using(CancellationTokenRegistration cr = ct.Register(()=>com.Cancel()))
                 using (SqlDataReader rd = com.ExecuteReader())
                 {
                     if (rd.HasRows)
@@ -221,20 +223,20 @@ namespace Livingstone.Library
         }
 
         public static void getDataList(List<string> header, List<string> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null,
+            string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters,ct, boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<string> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null,
+            string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (data == null)
@@ -255,6 +257,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 waitForConn(connStr, connectionLimit);
                 con.Open();
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = com.ExecuteReader())
                 {
                     if (rd.HasRows)
@@ -284,21 +287,21 @@ namespace Livingstone.Library
         }
 
         public static async Task getDataListAsync(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null,
+            string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout)
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, ct,boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout)
                     .ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<List<string>> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null,
+            string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (data == null)
@@ -319,6 +322,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 await waitForConnAsync(connStr, connectionLimit).ConfigureAwait(false);
                 await con.OpenAsync().ConfigureAwait(false);
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = await com.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     if (rd.HasRows)
@@ -352,21 +356,21 @@ namespace Livingstone.Library
         }
 
         public static async Task getDataListAsync(List<string> header, List<string> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null,
+            string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout)
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters,ct, boolStr, dateFormat, timeFormat, commandType, connectionLimit, timeout)
                     .ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<string> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null,
+            string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             Dictionary<string, Dictionary<bool, string>> boolStr = null,
-            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm", 
+            string dateFormat = "dd/MM/yyyy", string timeFormat = " HH:mm",
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (data == null)
@@ -387,6 +391,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 await waitForConnAsync(connStr, connectionLimit).ConfigureAwait(false);
                 await con.OpenAsync().ConfigureAwait(false);
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = await com.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     if (rd.HasRows)
@@ -417,16 +422,16 @@ namespace Livingstone.Library
         }
 
         public static void getDataList(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null, 
+            string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, commandType, connectionLimit, timeout);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters,ct, commandType, connectionLimit, timeout);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null, 
+            string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             using (SqlConnection con = new SqlConnection(connStr))
@@ -439,6 +444,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 waitForConn(connStr, connectionLimit);
                 con.Open();
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = com.ExecuteReader())
                 {
                     if (rd.HasRows)
@@ -468,16 +474,16 @@ namespace Livingstone.Library
         }
 
         public static async Task getDataListAsync(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string server, Dictionary<string, object> parameters = null, 
+            string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, commandType, connectionLimit, timeout).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters,ct, commandType, connectionLimit, timeout).ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<object> data, Dictionary<string, int> entries,
-            string sql, string connStr, Dictionary<string, object> parameters = null, 
+            string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (data == null)
@@ -497,6 +503,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 await waitForConnAsync(connStr, connectionLimit).ConfigureAwait(false);
                 await con.OpenAsync().ConfigureAwait(false);
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = await com.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     if (rd.HasRows)
@@ -527,16 +534,16 @@ namespace Livingstone.Library
         }
 
         public static void getDataList(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-        string sql, string server, Dictionary<string, object> parameters = null, 
+        string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
         CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                getDataListFromConnStr(header, data, entries, sql, connStr, parameters, commandType, connectionLimit, timeout);
+                getDataListFromConnStr(header, data, entries, sql, connStr, parameters,ct, commandType, connectionLimit, timeout);
         }
 
         public static void getDataListFromConnStr(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-        string sql, string connStr, Dictionary<string, object> parameters = null, 
+        string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
         CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (data == null)
@@ -556,6 +563,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 waitForConn(connStr, connectionLimit);
                 con.Open();
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = com.ExecuteReader())
                 {
                     if (rd.HasRows)
@@ -589,16 +597,16 @@ namespace Livingstone.Library
         }
 
         public static async Task getDataListAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-         string sql, string server, Dictionary<string, object> parameters = null, 
+         string sql, string server, Dictionary<string, object> parameters = null, CancellationToken ct = default,
          CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             string connStr = getConnStr(server);
             if (!string.IsNullOrEmpty(connStr))
-                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters, commandType, connectionLimit,timeout).ConfigureAwait(false);
+                await getDataListFromConnStrAsync(header, data, entries, sql, connStr, parameters,ct, commandType, connectionLimit, timeout).ConfigureAwait(false);
         }
 
         public static async Task getDataListFromConnStrAsync(List<string> header, List<List<object>> data, Dictionary<string, int> entries,
-         string sql, string connStr, Dictionary<string, object> parameters = null, 
+         string sql, string connStr, Dictionary<string, object> parameters = null, CancellationToken ct = default,
          CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             if (data == null)
@@ -618,6 +626,7 @@ namespace Livingstone.Library
                         com.Parameters.AddWithValue(key.Key, key.Value);
                 await waitForConnAsync(connStr, connectionLimit).ConfigureAwait(false);
                 await con.OpenAsync().ConfigureAwait(false);
+                using (CancellationTokenRegistration cr = ct.Register(() => com.Cancel()))
                 using (SqlDataReader rd = await com.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     if (rd.HasRows)
@@ -652,7 +661,7 @@ namespace Livingstone.Library
 
         public static UInt64 toUInt64(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(UInt64);
             switch (obj.GetType().Name)
             {
@@ -685,7 +694,7 @@ namespace Livingstone.Library
 
         public static Int64 toInt64(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(Int64);
             switch (obj.GetType().Name)
             {
@@ -718,7 +727,7 @@ namespace Livingstone.Library
 
         public static float toFloat(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(float);
             switch (obj.GetType().Name)
             {
@@ -751,7 +760,7 @@ namespace Livingstone.Library
 
         public static char toChar(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(char);
             switch (obj.GetType().Name)
             {
@@ -768,7 +777,7 @@ namespace Livingstone.Library
 
         public static DateTime? toDateTime(object obj, string format = "yyyy-MM-dd")
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return null;
             switch (obj.GetType().Name)
             {
@@ -789,7 +798,7 @@ namespace Livingstone.Library
         public static string toString(object obj, string header = null, Dictionary<string, Dictionary<bool, string>> boolStr = null, string dateFormat = "dd/MM/yyyy",
             string timeFormat = " HH:mm")
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return string.Empty;
             string fullTimeFormat = dateFormat + timeFormat;
             switch (obj.GetType().Name)
@@ -813,7 +822,7 @@ namespace Livingstone.Library
 
         public static Int32 toInt32(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(Int32);
             switch (obj.GetType().Name)
             {
@@ -833,7 +842,7 @@ namespace Livingstone.Library
 
         public static UInt32 toUInt32(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(UInt32);
             switch (obj.GetType().Name)
             {
@@ -853,7 +862,7 @@ namespace Livingstone.Library
 
         public static Int16 toInt16(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(Int16);
             switch (obj.GetType().Name)
             {
@@ -873,7 +882,7 @@ namespace Livingstone.Library
 
         public static UInt16 toUInt16(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(UInt16);
             switch (obj.GetType().Name)
             {
@@ -893,7 +902,7 @@ namespace Livingstone.Library
 
         public static decimal toDecimal(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return default(decimal);
             switch (obj.GetType().Name)
             {
@@ -927,8 +936,269 @@ namespace Livingstone.Library
 
         public static bool toBool(object obj)
         {
-            if (obj == null)
+            if (obj == null || obj == DBNull.Value)
                 return false;
+            switch (obj.GetType().Name)
+            {
+                case "String":
+                    return (obj.ToString().ToLower().Trim() == "true" || obj.ToString().Trim() == "1");
+                case "Int32":
+                    return (Int32)obj != 0;
+                case "UInt32":
+                    return (UInt32)obj != 0;
+                case "Int16":
+                    return (Int16)obj != 0;
+                case "UInt16":
+                    return (UInt16)obj != 0;
+                case "Int64":
+                    return (Int64)obj != 0;
+                case "UInt64":
+                    return (UInt64)obj != 0;
+                case "Double":
+                    return (Double)obj != 0;
+                case "Single":
+                    return (Single)obj != 0;
+                case "Decimal":
+                    return (Decimal)obj != 0;
+                default:
+                    return (bool)obj;
+            }
+        }
+
+        public static UInt64? toUInt64Null(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "String":
+                    if (UInt64.TryParse((string)obj, out var val))
+                        return val;
+                    else return null;
+                case "Single":
+                    return (UInt64)(Single)obj;
+                case "Double":
+                    return (UInt64)(double)obj;
+                case "Int16":
+                    return (UInt64)(Int16)obj;
+                case "UInt16":
+                    return (UInt16)obj;
+                case "Int32":
+                    return (UInt64)(Int32)obj;
+                case "UInt32":
+                    return (UInt32)obj;
+                case "Int64":
+                    return (UInt64)(Int64)obj;
+                case "UInt64":
+                    return (UInt64)obj;
+                case "Decimal":
+                    return (UInt64)(decimal)obj;
+                default:
+                    return (UInt64)obj;
+            }
+        }
+
+        public static Int64? toInt64Null(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "String":
+                    if (Int64.TryParse((string)obj, out var val))
+                        return val;
+                    else return null;
+                case "Single":
+                    return (Int64)(Single)obj;
+                case "Double":
+                    return (Int64)(double)obj;
+                case "Int16":
+                    return (Int16)obj;
+                case "UInt16":
+                    return (UInt16)obj;
+                case "Int32":
+                    return (Int32)obj;
+                case "UInt32":
+                    return (UInt32)obj;
+                case "Int64":
+                    return (Int64)obj;
+                case "UInt64":
+                    return (Int64)(UInt64)obj;
+                case "Decimal":
+                    return (Int64)(decimal)obj;
+                default:
+                    return (Int64)obj;
+            }
+        }
+
+        public static float? toFloatNull(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "String":
+                    if (float.TryParse((string)obj, out var fVal))
+                        return fVal;
+                    else return null;
+                case "Single":
+                    return (Single)obj;
+                case "Double":
+                    return (float)(double)obj;
+                case "Int16":
+                    return (Int16)obj;
+                case "UInt16":
+                    return (UInt16)obj;
+                case "Int32":
+                    return (Int32)obj;
+                case "UInt32":
+                    return (UInt32)obj;
+                case "Int64":
+                    return (Int64)obj;
+                case "UInt64":
+                    return (UInt64)obj;
+                case "Decimal":
+                    return (float)(decimal)obj;
+                default:
+                    return (float)obj;
+            }
+        }
+
+        public static char? toCharNull(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "String":
+                    var str = (string)obj;
+                    if (str.Length != 0)
+                        return str[0];
+                    else
+                        return default(char);
+                default:
+                    return null;
+            }
+        }
+
+        public static Int32? toInt32Null(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "Decimal":
+                    return (Int32)Convert.ToDecimal(obj);
+                case "String":
+                    if (Int32.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return null;
+                case "Boolean":
+                    return (bool)obj ? 1 : 0;
+                default:
+                    return Convert.ToInt32(obj);
+            }
+        }
+
+        public static UInt32? toUInt32Null(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "Decimal":
+                    return (UInt32)Convert.ToDecimal(obj);
+                case "String":
+                    if (UInt32.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return null;
+                case "Boolean":
+                    return (bool)obj ? 1u : 0u;
+                default:
+                    return Convert.ToUInt32(obj);
+            }
+        }
+
+        public static Int16? toInt16Null(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "Decimal":
+                    return (Int16)Convert.ToDecimal(obj);
+                case "String":
+                    if (Int16.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return null;
+                case "Boolean":
+                    return (bool)obj ? (Int16)1 : (Int16)0;
+                default:
+                    return Convert.ToInt16(obj);
+            }
+        }
+
+        public static UInt16? toUInt16Null(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "Decimal":
+                    return (UInt16)Convert.ToDecimal(obj);
+                case "String":
+                    if (UInt16.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return null;
+                case "Boolean":
+                    return (bool)obj ? (UInt16)1 : (UInt16)0;
+                default:
+                    return Convert.ToUInt16(obj);
+            }
+        }
+
+        public static decimal? toDecimalNull(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
+            switch (obj.GetType().Name)
+            {
+                case "String":
+                    if (decimal.TryParse(obj as string, out var res))
+                        return res;
+                    else
+                        return null;
+                case "Int32":
+                    return (Int32)obj;
+                case "UInt32":
+                    return (UInt32)obj;
+                case "Int16":
+                    return (Int16)obj;
+                case "UInt16":
+                    return (UInt16)obj;
+                case "Int64":
+                    return (Int64)obj;
+                case "UInt64":
+                    return (UInt64)obj;
+                case "Double":
+                    return (decimal)(double)obj;
+                case "Single":
+                    return (decimal)(Single)obj;
+                case "Boolean":
+                    return (bool)obj ? 1 : 0;
+                default:
+                    return (decimal)obj;
+            }
+        }
+
+        public static bool? toBoolNull(object obj)
+        {
+            if (obj == null || obj == DBNull.Value)
+                return null;
             switch (obj.GetType().Name)
             {
                 case "String":
@@ -1105,7 +1375,7 @@ namespace Livingstone.Library
                         rd.Read();
                         string header = rd.GetName(0);
                         if (!rd.IsDBNull(0))
-                            res = Convert.ToInt32(rd.GetValue(0));
+                            res = toInt32(rd.GetValue(0));
                     }
                 }
                 con.Close();
@@ -1144,7 +1414,85 @@ namespace Livingstone.Library
                         await rd.ReadAsync().ConfigureAwait(false);
                         string header = rd.GetName(0);
                         if (!rd.IsDBNull(0))
-                            res = Convert.ToInt32(rd.GetValue(0));
+                            res = toInt32(rd.GetValue(0));
+                    }
+                }
+                con.Close();
+                finalizeConn(connStr);
+            }
+            return res;
+        }
+
+        public static decimal? getDecimal(string sql, string server, Dictionary<string, object> parameters = null,
+            decimal? defaultDecimal = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
+        {
+            string connStr = getConnStr(server);
+            if (!string.IsNullOrEmpty(connStr))
+                return getDecimalFromConnStr(sql, connStr, parameters, defaultDecimal, commandType, connectionLimit, timeout);
+            return defaultDecimal;
+        }
+
+        public static decimal? getDecimalFromConnStr(string sql, string connStr, Dictionary<string, object> parameters = null,
+            decimal? defaultDecimal = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
+        {
+            decimal? res = defaultDecimal;
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandType = commandType;
+                com.CommandTimeout = timeout;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                waitForConn(connStr, connectionLimit);
+                con.Open();
+                using (SqlDataReader rd = com.ExecuteReader())
+                {
+                    if (rd.HasRows)
+                    {
+                        rd.Read();
+                        string header = rd.GetName(0);
+                        if (!rd.IsDBNull(0))
+                            res = toDecimalNull(rd.GetValue(0));
+                    }
+                }
+                con.Close();
+                finalizeConn(connStr);
+            }
+            return res;
+        }
+
+        public static async Task<decimal?> getDecimalAsync(string sql, string server, Dictionary<string, object> parameters = null,
+            decimal? defaultDecimal = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
+        {
+            string connStr = getConnStr(server);
+            if (!string.IsNullOrEmpty(connStr))
+                return await getDecimalFromConnStrAsync(sql, connStr, parameters, defaultDecimal, commandType, connectionLimit, timeout).ConfigureAwait(false);
+            return defaultDecimal;
+        }
+
+        public static async Task<decimal?> getDecimalFromConnStrAsync(string sql, string connStr, Dictionary<string, object> parameters = null,
+            decimal? defaultDecimal = 0, CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
+        {
+            decimal? res = defaultDecimal;
+            using (SqlConnection con = new SqlConnection(connStr))
+            using (SqlCommand com = new SqlCommand(sql, con))
+            {
+                com.CommandType = commandType;
+                com.CommandTimeout = timeout;
+                if (parameters != null)
+                    foreach (var key in parameters)
+                        com.Parameters.AddWithValue(key.Key, key.Value);
+                await waitForConnAsync(connStr, connectionLimit).ConfigureAwait(false);
+                await con.OpenAsync().ConfigureAwait(false);
+                using (SqlDataReader rd = await com.ExecuteReaderAsync().ConfigureAwait(false))
+                {
+                    if (rd.HasRows)
+                    {
+                        await rd.ReadAsync().ConfigureAwait(false);
+                        string header = rd.GetName(0);
+                        if (!rd.IsDBNull(0))
+                            res = toDecimalNull(rd.GetValue(0));
                     }
                 }
                 con.Close();
@@ -1311,7 +1659,7 @@ namespace Livingstone.Library
             return res;
         }
 
-        public static void ExecuteNonQuery(string sql, string server, Dictionary<string, object> parameters = null, 
+        public static void ExecuteNonQuery(string sql, string server, Dictionary<string, object> parameters = null,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             using (SqlConnection con = new SqlConnection(getConnStr(server)))
@@ -1339,7 +1687,7 @@ namespace Livingstone.Library
                 await ExecuteNonQueryAsync(sql, con, parameters, commandType, connectionLimit, timeout).ConfigureAwait(false);
         }
 
-        public static void ExecuteNonQuery(string sql, SqlConnection con, Dictionary<string, object> parameters = null, 
+        public static void ExecuteNonQuery(string sql, SqlConnection con, Dictionary<string, object> parameters = null,
             CommandType commandType = CommandType.Text, int connectionLimit = 100, int timeout = 0)
         {
             waitForConn(con.ConnectionString, connectionLimit);
@@ -1590,7 +1938,7 @@ namespace Livingstone.Library
 
     public static class ErrorHandler
     {
-        public static string getInfoString(Exception e, string delim = ", ")
+        public static string getInfoString(Exception e, string delim = "\n")
         {
             List<string> arrMsg = new List<string>();
             if (e is AggregateException)
